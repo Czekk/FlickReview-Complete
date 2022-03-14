@@ -1,4 +1,5 @@
 import { query } from "express"
+import mongodb, { ObjectId } from "mongodb"
 
 let movies
 
@@ -44,6 +45,50 @@ export default class MoviesDAO {
         console.error(`Unable to issue find command ${e}`)
         return {moviesList: [], totalNumMovies: 0}
     }
+    }
+
+    static async getRatings(){
+        let ratings =[]
+        try{
+            ratings= await movies.distinct("rated")
+            const remove= ['AO', 'NC-17', 'Not Rated', 'NOT RATED', 'PG', 'PG-13', 'R', 'X', 'UNRATED']
+            for(var i=0; i<ratings.length; ++i){
+                if(remove.includes(ratings[i])){
+                    ratings.splice(i, 1)
+                    --i
+                }
+            }
+            
+            return ratings
+        }
+        catch(e){
+            console.error(`unable to get ratings, ${e}`)
+            return ratings
+        }
+    }
+
+    static async getMovieById(id){
+        try{
+            return await movies.aggregate([
+                {
+                    $match: {
+                        _id: new ObjectId(id)
+                    }
+                },
+                {
+                    $lookup:{
+                        from: 'reviews',
+                        localField: '_id',
+                        foreignField: 'movie_id',
+                        as: 'reviews'
+                    }
+                }
+            ]).next()
+        }
+        catch(e){
+            console.error(`something went wrong in getMovieById: ${e}`)
+            throw e
+        }
     }
 }
 
