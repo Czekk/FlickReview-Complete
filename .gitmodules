@@ -1,5 +1,5 @@
-[submodule "backend"]
-	path = backend
+[submodule "Backend"]
+	path = Backend
 	url = https://github.com/Czekk/FlickReview-Backend.git
 [submodule "frontend"]
 	path = frontend
